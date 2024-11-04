@@ -8,6 +8,7 @@ Created on Sun Aug 19 22:49:02 2018
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+from tensorflow.compat.v1.keras import backend as K
 import matplotlib.pyplot as plt
 from .early_stopping_callback import GetBest
 from .utils import (cdf_to_quantile, evaluate_monotonicity, evaluate_crps, 
@@ -183,7 +184,7 @@ class Binning_CDF:
         return cut_points[all_valid_idx]
         
     def fit_cdf(self, train_x, train_y, valid_x=None, valid_y=None, ylim=None, 
-                batch_size = 32, epochs = 500, y_margin=0.1, opt_spec='adam',
+                batch_size=32, epochs=500, y_margin=0.1, opt_spec='adam',
                 validation_ratio=0.2, shuffle=True, verbose=1, gpu_count=0, 
                 merge_empty_bin=True):
         
@@ -242,7 +243,7 @@ class Binning_CDF:
             self.random_bin_list = []
             config = tf.compat.v1.ConfigProto(device_count={'GPU': gpu_count})
             session = tf.compat.v1.Session(config=config)
-            backend.set_session(session)         
+            K.set_session(session)      
             for i in range(self.niter):          
                 seeding2 = seedlist[i]
                 random_cut = self.cut_generator(self.num_cut_int, self.ylim[0], self.ylim[1], 
