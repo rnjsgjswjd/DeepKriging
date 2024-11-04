@@ -240,9 +240,9 @@ class Binning_CDF:
         if self.histogram_bin == 'random':
             self.model_list = []
             self.random_bin_list = []
-            config = tf.ConfigProto(device_count ={'GPU' : gpu_count})
-            session = tf.Session(config=config)
-            backend.set_session(session)             
+            config = tf.compat.v1.ConfigProto(device_count={'GPU': gpu_count})
+            session = tf.compat.v1.Session(config=config)
+            backend.set_session(session)         
             for i in range(self.niter):          
                 seeding2 = seedlist[i]
                 random_cut = self.cut_generator(self.num_cut_int, self.ylim[0], self.ylim[1], 
