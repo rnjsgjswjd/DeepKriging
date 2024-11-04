@@ -67,7 +67,7 @@ class Binning_CDF:
 
     def DNNclassifier_binary(self, p, num_cut, optimizer, seeding):
         
-        tf.set_random_seed(seeding)
+        tf.random.set_seed(seeding)
         inputs = Input(shape=(p,))
         if isinstance(optimizer, str):
             opt = optimizer
@@ -97,7 +97,7 @@ class Binning_CDF:
     
     def DNNclassifier_crps(self, p, num_cut, optimizer, seeding):
         
-        tf.set_random_seed(seeding)
+        tf.random.set_seed(seeding)
         inputs = Input(shape=(p,))
         if isinstance(optimizer, str):
             opt = optimizer
@@ -126,7 +126,7 @@ class Binning_CDF:
         
     def DNNclassifier_multiclass(self, p, num_cut, optimizer, seeding):
         
-        tf.set_random_seed(seeding)
+        tf.random.set_seed(seeding)
         inputs = Input(shape=(p,))
         if isinstance(optimizer, str):
             opt = optimizer
@@ -315,7 +315,7 @@ class Binning_CDF:
                 Valid_label = np.tile(fixed_cut, valid_y.shape[0]).reshape(valid_y.shape[0], -1)
                 Valid_label = (Valid_label > valid_y).astype(np.int8)  
             
-            tf.set_random_seed(self.seeding)
+            tf.random.set_seed(self.seeding)
             
             earlyStop = GetBest(monitor='val_loss', patience = 20, restore_best_weights=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor = 0.2, patience = 7)
@@ -328,7 +328,7 @@ class Binning_CDF:
             elif self.loss_model == 'multi-crps':
                 classmodel = self.DNNclassifier_crps(self.p, num_cut_actual, opt_spec, self.seeding)
             
-            tf.set_random_seed(self.seeding)
+            tf.random.set_seed(self.seeding)
             config = tf.ConfigProto(device_count = {'GPU' : gpu_count})
             session = tf.Session(config=config)
             backend.set_session(session)
