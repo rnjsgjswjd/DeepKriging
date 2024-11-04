@@ -246,6 +246,7 @@ class Binning_CDF:
             K.set_session(session)      
             for i in range(self.niter):          
                 seeding2 = seedlist[i]
+                tf.random.set_seed(seeding2)
                 random_cut = self.cut_generator(self.num_cut_int, self.ylim[0], self.ylim[1], 
                                                 seeding2, random=True, 
                                                 empirical_data=train_y, 
