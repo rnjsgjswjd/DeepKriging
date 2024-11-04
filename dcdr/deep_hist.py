@@ -269,7 +269,7 @@ class Binning_CDF:
                     Valid_label = np.tile(random_cut, valid_y.shape[0]).reshape(valid_y.shape[0], -1)
                     Valid_label = (Valid_label > valid_y).astype(np.int8)  
                     
-                tf.set_random_seed(seeding2)
+                tf.random.set_seed(seeding2)
                 
                 earlyStop = GetBest(monitor='val_acc', patience = 20, restore_best_weights=True)
                 reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor = 0.2, patience = 7)
