@@ -177,7 +177,7 @@ for (i in 1:10){
     
     
     # ML방법 Beta 및 공분산 함수 모수 추정
-    geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), negget=3, cov.model = 'spherical',
+    geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), nugget=3, cov.model = 'spherical',
                       trend = trend.spatial(trend='1st', geodata = geodata_train, 
                                             add.to.trend = ~prec+temp+pres+rh+uwind+vwind),
                       messages = FALSE)
@@ -203,7 +203,7 @@ for (i in 1:10){
     acc[i] = confusionMatrix(Pred_class,as.factor(valid_kriging[,11]))$over[1]
 }
 
-end_time <- Sys.time()
+# end_time <- Sys.time()
 # cat("Time: ",end_time-start_time,"\n")
 
 ```
@@ -238,7 +238,7 @@ for (i in 1:10){
     geodata_train = as.geodata(train_kriging, coords.col = 2:3, data.col = 10,covar.col = 4:9)
     geodata_valid = as.geodata(valid_kriging,coords.col = 2:3,data.col = 10,covar.col = 4:9)
     
-    geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), negget=3,
+    geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), nugget=3,
                       cov.model = 'spherical', messages = FALSE)
     krig_control = krige.control(type.krige = "OK",  obj.model = geoR_fit)
 
@@ -286,7 +286,6 @@ library(FRK)
 우리가 사용하고 있는 데이터의 클래스는 `data.frame`이지만, FRK는 spatial object인 `SpatialPointsDataFrame` 혹은 `SpatialPolygonsDataFrame` 클래스를 사용합니다. 따라서, 우리는 `coordinates()` 함수를 사용하여 `SpatialPointsDataFrame` 객체를 생성합니다. 이때, 중요한 옵션은 다음과 같습니다. 이때, 우리가 사용하는 데이터는 좌표 기반이므로 `SpatialPointsDataFrame`을 사용하는 것입니다.
 
 ```{r}
-rm(list=ls())
 
 data_kriging2 <- read.csv("kriging2.csv", header = TRUE)
 names(data_kriging2) <- c("index","long","lat","prec","temp","pres","rh","uwind","vwind","pm25","pm25_class","pm25_log")
@@ -301,6 +300,7 @@ coordinates(FRK_train) <- ~long+lat
 FRK_data_BAUs <- us_metero
 coordinates(FRK_data_BAUs) <- ~long+lat
 FRK_data_BAUs.grid <- BAUs_from_points(FRK_data_BAUs)
+
 ```
 
 ## Basis Setting
@@ -308,7 +308,7 @@ FRK_data_BAUs.grid <- BAUs_from_points(FRK_data_BAUs)
 ```{r}
 G <- auto_basis(manifold = plane(), # 2D plane
                  data = FRK_train, # data
-                 nres = 3, # number of resolutions
+                 nres = 2, # number of resolutions
                  type = "bisquare", # type of basis function
                  regular = 1) # place regularly in domain
 
@@ -318,6 +318,8 @@ show_basis(G) + # illustrate basis functions
   ylab("") # y-labe
 
 ```
+
+
 
 ## Fitting and Prediction
 
@@ -369,7 +371,7 @@ BAUs_df <- as.data.frame(Pred)  # convert the BAUs to data frame
 #     geodata_train = as.geodata(train_kriging, coords.col = 2:3, data.col = 10,covar.col = 4:9)
 #     geodata_valid = as.geodata(valid_kriging,coords.col = 2:3,data.col = 10,covar.col = 4:9)
 #     
-#     geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), negget=3,
+#     geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), nugget=3,
 #                       cov.model = 'spherical', messages = FALSE)
 #     krig_control = krige.control(type.krige = "OK",  obj.model = geoR_fit)
 # 
@@ -404,7 +406,7 @@ write.csv(result,"Krig_CV_all.csv",row.names=FALSE)
 
 # Spatial Prediction
 
-## Data
+## Data Description
 
 여기서 불러온 데이터는 파이썬에서 DeepKriging을 통해 예측한 PM25 데이터입니다. 이 데이터는 `PM25_pred_0605.csv`로 저장되어 있습니다. 이 데이터는 다음과 같은 열을 가지고 있습니다.
 
@@ -425,6 +427,7 @@ names(pred_data)<- c("index","long","lat","prec","temp","pres","rh","uwind","vwi
 dim(pred_data)
 ```
 
+## UK
 
 ```{r Kriging prediction}
 geodata_train = as.geodata(data_kriging, coords.col = 2:3, data.col = 10, covar.col = 4:9)
@@ -432,7 +435,7 @@ geodata_pred = as.geodata(pred_data, coords.col = 2:3, data.col = 10, covar.col 
 
 start_time <- Sys.time()
 
-geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), negget=3,
+geoR_fit = likfit(geodata_train, ini.cov.pars = c(18, 0.5), nugget=3, cov.model = 'spherical',
                   trend = trend.spatial(trend='1st', geodata = geodata_train, 
                                         add.to.trend = ~prec+temp+pres+rh+uwind+vwind),
                   messages = FALSE)
@@ -449,6 +452,28 @@ result = krige.conv(geodata_train, locations = geodata_pred$coords,krige=krig_co
 end_time <- Sys.time()
 cat("Time: ",end_time-start_time,"\n")
 ```
+
+## OK
+
+```{r}
+# UK와 마찬가지로 진행
+
+start_time <- Sys.time()
+
+geoR_fit_OK = likfit(geodata_train, ini.cov.pars = c(18, 0.5), nugget=3,
+                  cov.model = 'spherical', messages = FALSE)
+
+krig_control_OK = krige.control(type.krige = "OK",  obj.model = geoR_fit_OK)
+
+result_OK = krige.conv(geodata_train, locations = geodata_pred$coords, krige=krig_control_OK)
+
+end_time <- Sys.time()
+cat("Time: ",end_time-start_time,"\n")
+
+```
+
+
+# Visualization
 
 ```{r plots, message=FALSE}
 # install.packages("fields")
@@ -477,11 +502,25 @@ quilt.plot(us_metero$long, us_metero$lat, risk_pred, zlim=c(0,1),main="(c) DeepK
 quilt.plot(us_metero$long,us_metero$lat,result$predict,zlim=c(0,25),main="(d) Universal Kriging")
 # map("state",add=TRUE)
 
-quilt.plot(BAUs_df$newdata.long, BAUs_df$newdata.lat, BAUs_df$newdata.p_mu, zlim=c(0,25),main="(e) FRK")
+quilt.plot(us_metero$long,us_metero$lat,result_OK$predict,zlim=c(0,25),main="(d) Ordinary Kriging")
+
+quilt.plot(BAUs_df$newdata.long, BAUs_df$newdata.lat, BAUs_df$newdata.p_mu, zlim=c(0,25),main="(f) FRK")
 
 ```
 
 위 그림의 결과로 미루어보아 DeepKriging은 값이 낮은 지역을 좀 더 위글리 하게 맞춰서 전체적인 loss를 줄이는 방향으로 학습이 된것 같고, UK같은 경우는 관측된 지역의 값은 그대로 맞추기 때문에 값이 높은 지역에서는 DeepKriging보다 잘 맞추는 경향이 있는것 같습니다.
+
+```{r}
+# 한번에 다그리기
+par(mfrow=c(2,2), mar=c(2,3,1.5,2), mgp=c(1.5,0.5,0))
+quilt.plot(pm25_data$Longitude, pm25_data$Latitude, pm25_data$PM25,
+           zlim=c(0,25),main="Observed")
+quilt.plot(us_metero$long,us_metero$lat,result_OK$predict,zlim=c(0,25),
+           main="Ordinary Kriging")
+quilt.plot(us_metero$long,us_metero$lat,result$predict,zlim=c(0,25),main="Universal Kriging")
+quilt.plot(BAUs_df$newdata.long, BAUs_df$newdata.lat, BAUs_df$newdata.p_mu, zlim=c(0,25),main="(e) FRK")
+
+```
 
 
 
